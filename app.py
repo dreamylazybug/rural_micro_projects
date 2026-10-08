@@ -14,7 +14,7 @@ st.set_page_config(
 # App Header
 st.title("🌱 Smart Crop & Livelihood Recommender / స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ")
 st.subheader("AP & Telangana Regional Agricultural Decision Support System")
-st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, university best practices, and instant WhatsApp sharing. / ద్వైభాషిక శోధన, హైడ్రాలజీ, విశ్వవిద్యాలయ సిఫార్సులు మరియు వాట్సాప్ షేరింగ్.")
+st.markdown("Fully customized parameter-driven recommendations, multi-source hydrology, latest research breakthroughs, and instant WhatsApp sharing.")
 
 # --- DEMO PRE-POPULATION HELPER ---
 with st.container():
@@ -214,8 +214,8 @@ st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:
 
 st.divider()
 
-# --- STEP 6: COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY ---
-st.header("6. Complete Crop Advisory & Livelihood Plan / పూర్తి పంట మరియు ఆర్థిక సలహా")
+# --- STEP 6: EXPANDED & CUSTOMIZED RECOMMENDATION ENGINE ---
+st.header("6. Complete Customized Crop Advisory & Livelihood Plan / పూర్తి అనుకూలీకరించిన పంట సలహా")
 
 crop_advisory_db = {
     "Redgram": {
@@ -260,7 +260,6 @@ crop_advisory_db = {
         "harvest": "October – November (100-110 Days / రోజులు)",
         "yield": "7 - 10 Quintals / Acre (క్వింటాళ్లు / ఎకరా)",
         "fertilizers": "Low input requirement; organic compost or minimal NPK.\n*తెలుగు వివరాలు:* తక్కువ ఎరువులు సరిపోతాయి; సేంద్రీయ ఎరువులు లేదా తక్కువ మోతాదులో ఎన్పీకే.",
-        "pests": "Shoot Fly. Mitigation: Seed treatment with Imidacloprid, timely sowing.\n*తెలుగు వివరాలు:* ఈగ తెగులు (షూ ఫ్లై). నివారణ: ఇమిడాక్లోప్రిడ్‌తో విత్తన శుద్ధి మరియు సరైన సమయంలో విత్తనాలు వేయడం.",
         "issues": "Bird damage during grain filling stage; requires community scare tactics or nets.\n*తెలుగు వివరాలు:* గింజ పాలు పోసే సమయంలో పిచ్చుకలు/పక్షుల బెడద; కాపలా కాయడం లేదా వలలు అవసరం."
     }
 }
@@ -283,28 +282,44 @@ nearest_storage = cold_storage_db.get(district_tag, {"name": "Local District Co-
 if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary") or is_demo:
     is_only_rainfed = len(water_sources) == 0 or ("Rainfed" in water_sources and len(water_sources) == 1)
 
-    if "Legumes" in previous_crop:
-        if not is_only_rainfed and "High" in investment_budget:
-            matched_key = "Paddy" if "Alluvial" in detected_soil_type else "Cotton"
-        else:
-            matched_key = "Groundnut"
-        est_return = "₹40,000 – ₹65,000 net return/acre (Boosted by Legume Residual Nitrogen)"
+    water_constraint_risk = "Low"
+    if any("Borewell" in src for src in water_sources) and borewell_depth > 500 and power_hours < 7:
+        water_constraint_risk = "High (Deep Bore & Low Power)"
     elif is_only_rainfed:
-        matched_key = "Redgram" if "Red Sandy" in detected_soil_type else "Millets"
-        est_return = "₹25,000 – ₹40,000 net return/acre"
-    elif "Low" in investment_budget:
-        matched_key = "Millets"
-        est_return = "₹25,000 – ₹40,000 net return/acre"
-    elif "High" in investment_budget and not is_only_rainfed:
-        matched_key = "Cotton" if "Black Cotton" in detected_soil_type else "Paddy"
-        est_return = "₹70,000 – ₹1,20,000 gross return/acre"
-    else:
-        matched_key = "Groundnut" if "Red Sandy" in detected_soil_type else "Redgram"
-        est_return = "₹35,000 – ₹55,000 net return/acre"
+        water_constraint_risk = "Medium (Rainfed Dryland)"
 
     if is_demo:
         matched_key = "Cotton"
-        est_return = "₹75,000 – ₹1,10,000 gross return/acre"
+        est_return = "₹75,000 – ₹1,10,000 gross return/acre (Optimized for Black Cotton & Canal Irrigation)"
+        recommendation_rationale = "Selected based on demo profile matching heavy alluvial/black soil with reliable canal and supplemental borewell irrigation."
+    elif is_only_rainfed:
+        if "Red Sandy" in detected_soil_type:
+            matched_key = "Redgram"
+            est_return = "₹28,000 – ₹42,000 net return/acre (Drought-Resilient Pulses)"
+        else:
+            matched_key = "Millets"
+            est_return = "₹22,000 – ₹36,000 net return/acre (Low-Moisture Tolerance)"
+        recommendation_rationale = "Customized for rainfed dryland conditions prioritizing moisture conservation and drought-hardy crops."
+    elif "Low" in investment_budget:
+        matched_key = "Millets"
+        est_return = "₹25,000 – ₹40,000 net return/acre (Low Capital Input)"
+        recommendation_rationale = "Customized for low-capital availability, minimizing high chemical/fertilizer overhead."
+    elif "Legumes" in previous_crop and not is_only_rainfed:
+        if "Black Cotton" in detected_soil_type and "High" in investment_budget:
+            matched_key = "Cotton"
+            est_return = "₹80,000 – ₹1,25,000 gross return/acre (Nitrogen Credit Boost)"
+        else:
+            matched_key = "Paddy"
+            est_return = "₹55,000 – ₹85,000 gross return/acre (Rotational Yield Bonus)"
+        recommendation_rationale = "Customized utilizing preceding legume nitrogen fixation credits to boost high-yield cereal/cash crop returns."
+    elif "High" in investment_budget and not is_only_rainfed:
+        matched_key = "Cotton" if "Black Cotton" in detected_soil_type else "Paddy"
+        est_return = "₹70,000 – ₹1,20,000 gross return/acre (Commercial Intensive)"
+        recommendation_rationale = "Customized for high-capital commercial intensity matching soil type and stable irrigation."
+    else:
+        matched_key = "Groundnut" if "Red Sandy" in detected_soil_type else "Redgram"
+        est_return = "₹35,000 – ₹55,000 net return/acre"
+        recommendation_rationale = "Customized for balanced input availability and regional soil profile."
 
     profile = crop_advisory_db.get(matched_key, crop_advisory_db["Redgram"])
 
@@ -315,6 +330,13 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
 
     st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {profile['telugu']}")
     
+    st.info(
+        f"📋 **Parameter Customization Rationale / సిఫార్సు వెనుక ఉన్న కారణాలు:**\n"
+        f"- {recommendation_rationale}\n"
+        f"- *Water Hydrology Risk:* {water_constraint_risk} | *Soil Type:* {detected_soil_type}\n"
+        f"- *Previous Crop Legacy:* {soil_health_proxy}"
+    )
+
     col_r1, col_r2 = st.columns(2)
     with col_r1:
         st.metric(label="Estimated Yield / అంచనా దిగుబడి", value=profile['yield'])
@@ -339,49 +361,54 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
         f"- **Facility Name / పేరు:** {storage_name}\n"
         f"- **Capacity / సామర్థ్యం:** {storage_cap} | **Distance / దూరం:** {storage_dist}\n"
         f"- **Fertilizer Sourcing Channel / ఎరువుల సేకరణ:** {fertilizer_clean}\n"
-        f"- *Soil Health Status based on History / నేల ఆరోగ్యం:* {soil_health_proxy}\n"
         f"- *Ideal for safe storage of perishable yields and market price buffering.*"
     )
             
     st.warning("💡 **Advisory Note / ముఖ్య గమనిక:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
 
-    # --- STEP 7: UNIVERSITY AGRONOMIC & AGROFORESTRY BEST PRACTICES (ANGRAU / PJTSAU) ---
-    st.header("7. University Agro-Advisory & Agroforestry Guidelines / విశ్వవిద్యాలయ సూచనలు & వ్యవసాయ అడవి విధానాలు")
+    # --- STEP 7: ADVANCED UNIVERSITY & RESEARCH DISCOVERIES (ANGRAU / PJTSAU / ICRISAT) ---
+    st.header("7. Latest Research & University Discoveries / తాజా పరిశోధనలు మరియు విశ్వవిద్యాలయ ఆవిష్కరణలు")
 
-    university_practices_db = {
+    latest_research_db = {
         "Redgram": {
-            "intercrop": "Intercrop with Pearl Millet (Sajja) or Groundnut (1:7 ratio) to maximize returns and control soil erosion.\n*తెలుగు:* సజ్జ లేదా వేరుశెనగతో అంతరపంటగా సాగు చేయడం ద్వారా అదనపు ఆదాయం మరియు నేల కోత నివారణ.",
-            "bund_trees": "Plant Drumstick (Moringa / మునగ) or Subabul on bunds for secondary income and fodder.\n*తెలుగు:* పొలం గట్లపై మునగ లేదా సుబాబుల్ చెట్లను పెంచడం ద్వారా అదనపు ఆదాయం మరియు మేత.",
-            "moisture": "Perform deep summer ploughing across slopes immediately after first pre-monsoon showers.\n*తెలుగు:* తొలి తొలకరి వర్షాల తర్వాత వాలుకు అడ్డంగా లోతు దుక్కులు దున్నాలి."
+            "breakthrough": "Integration of genomic-assisted breeding for sterility mosaic disease resistance and early-maturity lines (ICRISAT/ANGRAU trials).\n*తెలుగు:* వంధ్యత్వ తెగును తట్టుకునే శక్తి మరియు త్వరగా కోతకు వచ్చే రకాలపై జన్యుపరమైన అభివృద్ధి.",
+            "intercrop": "Intercrop with Pearl Millet or Groundnut (1:7 ratio) combined with biopesticides (Trichoderma seed treatment).\n*తెలుగు:* సజ్జ లేదా వేరుశెనగతో అంతరపంట (1:7 నిష్పత్తి) మరియు ట్రైకోడెర్మాతో విత్తన శుద్ధి.",
+            "bund_trees": "Plant Drumstick (Moringa) or Subabul on bunds for secondary income and microclimate regulation.\n*తెలుగు:* పొలం గట్లపై మునగ చెట్లను పెంచడం ద్వారా అదనపు ఆదాయం మరియు అనుకూల వాతావరణం.",
+            "moisture": "In-situ moisture conservation using ridge-and-furrow method coupled with nano-zinc foliar application.\n*తెలుగు:* బోదెలు మరియు సాళ్ల పద్ధతి ద్వారా తేమ సంరక్షణ, అలాగే నానో-జింక్ పిచికారీ."
         },
         "Groundnut": {
-            "intercrop": "Pair with Castor (Amudam) or Redgram in a 7:1 row arrangement for pest barrier protection.\n*తెలుగు:* 7:1 నిష్పత్తిలో ఆముదం లేదా కందిని అంతరపంటగా వేయడం ద్వారా తెగుళ్ల బెడద తగ్గుతుంది.",
-            "bund_trees": "Plant Silver Oak or Tamarind on field perimeters; avoid shading the crop canopy.\n*తెలుగు:* పొలం సరిహద్దుల్లో సిల్వర్ ఓక్ లేదా చింత చెట్లను పెంచాలి (నీడ పడకుండా చూసుకోవాలి).",
-            "moisture": "Implement 'Stale Seedbed' technique and apply gypsum at flowering for moisture retention and pod development.\n*తెలుగు:* కాయ గట్టిపడే దశలో జిప్సమ్ వేయడం మరియు తేమ సంరక్షణ పద్ధతులు పాటించాలి."
+            "breakthrough": "Dual-stage application of Nano NPK and seaweed extract to combat terminal drought stress and enhance pod filling.\n*తెలుగు:* కరువును తట్టుకోవడానికి మరియు కాయ గట్టిపడటానికి నానో ఎన్పీకే మరియు సీవీడ్ ఎక్స్‌ట్రాక్ట్ వాడకం.",
+            "intercrop": "Pair with Castor or Redgram in a 7:1 row arrangement for natural trap-crop pest barrier protection.\n*తెలుగు:* సహజ పురుగుల నివారణ కోసం 7:1 నిష్పత్తిలో ఆముదం లేదా కందిని అంతరపంటగా సాగు చేయాలి.",
+            "bund_trees": "Establish Silver Oak or perimeter nitrogen-fixing shrubs without restricting canopy sunlight.\n*తెలుగు:* కాంతికి ఆటంకం కలగకుండా సరిహద్దుల్లో సిల్వర్ ఓక్ లేదా నత్రజని అందించే పొదలను పెంచాలి.",
+            "moisture": "Stale seedbed technique with gypsum enrichment (200 kg/acre) at peak flowering stage.\n*తెలుగు:* పూత దశలో జిప్సమ్ (ఎకరానికి 200 కిలోలు) వినియోగం మరియు నేల తేమ సంరక్షణ."
         },
         "Cotton": {
-            "intercrop": "Intercrop with Green Gram (Pesalu) or Black Gram (Minumulu) during initial 45 days.\n*తెలుగు:* పత్తిలో మొదటి 45 రోజులు పెసలు లేదా మినుములు అంతరపంటగా సాగు చేయవచ్చు.",
-            "bund_trees": "Establish Teak (Teeku) or Casuarina on northern farm boundaries as a windbreak and future timber revenue.\n*తెలుగు:* ఉత్తర సరిహద్దులో టేకు లేదా జీలుగు చెట్లను పెంచడం ద్వారా ఈదురు గాలుల నుండి రక్షణ మరియు భవిష్యత్ ఆదాయం.",
-            "moisture": "Adopt ridge-and-furrow method during the last inter-cultivation to prevent waterlogging and conserve rainwater.\n*తెలుగు:* అంతర కృషి సమయంలో బోదెలు ఏర్పాటు చేసి వర్షపు నీటిని నిల్వ చేయాలి."
+            "breakthrough": "Precision mechanization via single-row parasol pickers and smart pheromone disruption for Pink Bollworm control.\n*తెలుగు:* గులాబీ రంగు పురుగు నివారణకు స్మార్ట్ ఫెరోమోన్ బుట్టలు మరియు సింగిల్ రో కాటన్ పిక్కర్ల వినియోగం.",
+            "intercrop": "Short-duration pulse intercropping (Green Gram/Minumulu) during the first 45 days to suppress weed growth.\n*తెలుగు:* కలుపు నివారణకు తొలి 45 రోజులు పెసలు లేదా మినుములు అంతరపంటగా వేయాలి.",
+            "bund_trees": "Plant Teak or Casuarina on northern farm borders as a windbreak and future timber capital asset.\n*తెలుగు:* ఈదురు గాలుల నుండి రక్షణ మరియు భవిష్యత్ ఆదాయం కోసం ఉత్తర సరిహద్దులో టేకు చెట్లు.",
+            "moisture": "Alternate furrow irrigation and residue incorporation to boost soil organic carbon.\n*తెలుగు:* ప్రత్యామ్నాయ సాళ్లలో నీరు పెట్టడం మరియు పంట అవశేషాలను నేలలో కలియదున్నడం."
         },
         "Paddy": {
-            "intercrop": "Direct Seeded Rice (DSR) or Greengram green manuring incorporation 10 days before transplanting.\n*తెలుగు:* నారు పోసే ముందు పచ్చిరొట్ట ఎరువును (జనుము/పిల్లిపెసర) నేలలో కలియదున్నాలి.",
-            "bund_trees": "Plant Glyricidia or Pongamia (Kanuga) along irrigation channels for green leaf manure and boundary strengthening.\n*తెలుగు:* నీటి కాలువల వెంట గ్లైరిసిడియా లేదా కానుగ చెట్లను పెంచడం ద్వారా ఆకు ఎరువు లభిస్తుంది.",
-            "moisture": "Alternate Wetting and Drying (AWD) irrigation method to save 30% water and prevent tiller rot.\n*తెలుగు:* ఆరబెట్టి తడిపెట్టే విధానం (AWD) ద్వారా 30% నీటిని ఆదా చేయవచ్చు."
+            "breakthrough": "Direct Seeded Rice (DSR) protocols combined with Alternate Wetting and Drying (AWD) sensors to save up to 30% water.\n*తెలుగు:* 30% నీటిని ఆదా చేయడానికి డైరెక్ట్ సీడెడ్ రైస్ (DSR) మరియు AWD పద్ధతుల అవలంబన.",
+            "intercrop": "Green manuring incorporation (Dhaincha/Sunhemp) 10 days prior to transplanting for natural nitrogen enrichment.\n*తెలుగు:* నాటేయడానికి 10 రోజుల ముందు పచ్చిరొట్ట ఎరువును (జీలుగ/జనుము) నేలలో కలియదున్నాలి.",
+            "bund_trees": "Glyricidia and Pongamia plantations along channels for organic green leaf manure and bund reinforcement.\n*తెలుగు:* కాలువల వెంట గ్లైరిసిడియా చెట్లను పెంచడం ద్వారా సహజ ఆకు ఎరువు మరియు గట్ల రక్షణ.",
+            "moisture": "Precision laser-land leveling to ensure uniform water distribution and minimize percolation loss.\n*తెలుగు:* నీరు సమానంగా అందడానికి మరియు వృధా కాకుండా లేజర్ ల్యాండ్ లెవెలర్ వాడకం."
         },
         "Millets": {
-            "intercrop": "Intercrop Finger Millet (Ragi) with Cowpea (Alasandalu) for balanced soil nitrogen maintenance.\n*తెలుగు:* రాగులతో పాటు అలసందలను అంతరపంటగా వేయడం ద్వారా నేలలో నత్రజని స్థిరపడుతుంది.",
-            "bund_trees": "Grow Subabul or fruit-bearing Sapota trees on farm boundaries.\n*తెలుగు:* పొలం హద్దుల్లో సుబాబుల్ లేదా సపోటా చెట్లను పెంచవచ్చు.",
-            "moisture": "In-situ moisture conservation using contour bunding and dead furrows.\n*తెలుగు:* సమతల గట్లు మరియు డెడ్ ఫర్రోస్ ద్వారా నేలలో తేమను సంరక్షించాలి."
+            "breakthrough": "Deployment of climate-resilient biofortified varieties (e.g., improved Sorghum & Finger Millet lines) resistant to lodging.\n*తెలుగు:* వాతావరణ మార్పులను తట్టుకునే మరియు పడిపోని మెరుగైన జొన్న, రాగి వరి రకాల సాగు.",
+            "intercrop": "Intercrop Finger Millet with Cowpea for dual-benefit nitrogen fixation and protein yield.\n*తెలుగు:* నత్రజని స్థిరత్వం మరియు పోషకాల కోసం రాగులతో పాటు అలసందల సాగు.",
+            "bund_trees": "Plant fruit-bearing Sapota or Subabul on farm margins for ecological balance and supplemental income.\n*తెలుగు:* అదనపు ఆదాయం మరియు పర్యావరణ సమతుల్యత కోసం సరిహద్దుల్లో సపోటా లేదా సుబాబుల్.",
+            "moisture": "Contour bunding and dead-furrow rainwater harvesting to capture every drop of precipitation.\n*తెలుగు:* ప్రతి వర్షపు చుక్కను సంరక్షించడానికి సమతల గట్లు మరియు డెడ్ ఫర్రోస్ నిర్మాణం."
         }
     }
 
-    uni_guide = university_practices_db.get(matched_key, university_practices_db["Redgram"])
+    research_guide = latest_research_db.get(matched_key, latest_research_db["Redgram"])
 
-    with st.expander("🎓 View Official ANGRAU / PJTSAU University Agroforestry & Best Practices Guidelines / విశ్వవిద్యాలయ మార్గదర్శకాలు"):
-        st.markdown(f"**🌿 Recommended Intercropping / అంతరపంటల విధానం:**\n{uni_guide['intercrop']}")
-        st.markdown(f"**🌳 Revenue-Bearing Boundary Trees / సరిహద్దు ఆదాయ వృక్షాలు:**\n{uni_guide['bund_trees']}")
-        st.markdown(f"**💧 Moisture Conservation Timeline / తేమ సంరక్షణ కాలపట్టిక:**\n{uni_guide['moisture']}")
+    with st.expander("🔬 View Latest Research Discoveries & University Guidelines / తాజా పరిశోధన ఆవిష్కరణలు"):
+        st.markdown(f"**⚡ Breakthrough Technology / అతధునిక సాంకేతికత:**\n{research_guide['breakthrough']}")
+        st.markdown(f"**🌿 Recommended Intercropping / అంతరపంటల విధానం:**\n{research_guide['intercrop']}")
+        st.markdown(f"**🌳 Revenue-Bearing Boundary Trees / సరిహద్దు ఆదాయ వృక్షాలు:**\n{research_guide['bund_trees']}")
+        st.markdown(f"**💧 Advanced Moisture Conservation / అధునాతన తేమ సంరక్షణ:**\n{research_guide['moisture']}")
 
     # --- WHATSAPP SHARE BUTTON INTEGRATION ---
     wa_message = (
