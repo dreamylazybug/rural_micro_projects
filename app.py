@@ -12,9 +12,9 @@ st.set_page_config(
 )
 
 # App Header
-st.title("🌱 Smart Crop & Livelihood Recommender")
-st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, crop history tracking, stable camera UI, and instant WhatsApp sharing.")
+st.title("🌱 Smart Crop & Livelihood Recommender / స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ")
+st.subheader("AP & Telangana Regional Agricultural Decision Support System")
+st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, university best practices, and instant WhatsApp sharing. / ద్వైభాషిక శోధన, హైడ్రాలజీ, విశ్వవిద్యాలయ సిఫార్సులు మరియు వాట్సాప్ షేరింగ్.")
 
 # --- DEMO PRE-POPULATION HELPER ---
 with st.container():
@@ -86,7 +86,7 @@ def fetch_weather_data(latitude, longitude):
         return 28.5, 70.0, 300.0
 
 current_temp, current_humidity, elevation = fetch_weather_data(lat, lon)
-st.success(f"📍 **Selected Location / ఎంచుకున్న ప్రాంతం:** {selected_location_str} | **Temp:** {current_temp}°C | **Elevation:** {elevation}m (Cached Offline Ready)")
+st.success(f"📍 **Selected Location / ఎంచుకున్న ప్రాంతం:** {selected_location_str} | **Temp / ఉష్ణోగ్రత:** {current_temp}°C | **Elevation / ఎత్తు:** {elevation}m (Offline Cached Ready)")
 
 st.divider()
 
@@ -116,9 +116,9 @@ with st.expander("⚙️ Configure Parameters for Selected Water Sources / ఎ�
         st.subheader("Borewell Parameters / బోర్‌వెల్ వివరాలు")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=borewell_depth, step=50)
+            borewell_depth = st.number_input("Borewell Depth (Feet) / బోర్‌వెల్ లోతు (అడుగులలో)", min_value=100, max_value=1200, value=borewell_depth, step=50)
         with col_w2:
-            power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=power_hours)
+            power_hours = st.slider("Daily Power Supply (Hours) / రోజువారీ విద్యుత్ సరఫరా (గంటలు)", min_value=3, max_value=24, value=power_hours)
 
     if any("Canal" in src for src in water_sources):
         st.subheader("Canal Irrigation Parameters / కాల్వ నీటి సరఫరా")
@@ -142,7 +142,7 @@ if any("Borewell" in src for src in water_sources) and borewell_depth > 600:
 
 st.divider()
 
-# --- STEP 3: CROP HISTORY & NUTRIENT RESIDUE ---
+# --- STEP 3: CROP HISTORY & NUTRIENT RESIDUE (FARMER INPUT) ---
 st.header("3. Crop History & Soil Health / పంట చరిత్ర మరియు నేల ఆరోగ్యం")
 
 previous_crop = st.selectbox(
@@ -165,7 +165,7 @@ st.header("4. Financials & Inputs / ఆర్థిక మరియు ఎరు
 col_e1, col_e2 = st.columns(2)
 with col_e1:
     investment_budget = st.selectbox(
-        "Available Capital / పెట్టుబడి బడ్జెట్ (per Acre):",
+        "Available Capital / పెట్టుబడి బడ్జెట్ (ఎకరాకు):",
         [
             "Medium (₹15,000 - ₹35,000 / Acre)",
             "Low (< ₹15,000 / Acre - Low Input)",
@@ -188,9 +188,9 @@ st.divider()
 st.header("5. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
 
 if is_demo:
-    st.info("🟢 **Demo Mode Active:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల* (Camera input displayed below for preview stability).")
+    st.info("🟢 **Demo Mode Active / డెమో మోడ్ సక్రియం:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల*.")
 
-st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
+st.markdown("Take a clear picture of your field soil using your mobile camera. / మీ మొబైల్ కెమెరాతో మీ పొలం నేల ఫోటోను తీయండి.")
 soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి")
 
 if is_demo:
@@ -214,7 +214,7 @@ st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:
 
 st.divider()
 
-# --- STEP 6: COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY WITH WHATSAPP SHARE ---
+# --- STEP 6: COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY ---
 st.header("6. Complete Crop Advisory & Livelihood Plan / పూర్తి పంట మరియు ఆర్థిక సలహా")
 
 crop_advisory_db = {
@@ -283,7 +283,13 @@ nearest_storage = cold_storage_db.get(district_tag, {"name": "Local District Co-
 if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary") or is_demo:
     is_only_rainfed = len(water_sources) == 0 or ("Rainfed" in water_sources and len(water_sources) == 1)
 
-    if is_only_rainfed:
+    if "Legumes" in previous_crop:
+        if not is_only_rainfed and "High" in investment_budget:
+            matched_key = "Paddy" if "Alluvial" in detected_soil_type else "Cotton"
+        else:
+            matched_key = "Groundnut"
+        est_return = "₹40,000 – ₹65,000 net return/acre (Boosted by Legume Residual Nitrogen)"
+    elif is_only_rainfed:
         matched_key = "Redgram" if "Red Sandy" in detected_soil_type else "Millets"
         est_return = "₹25,000 – ₹40,000 net return/acre"
     elif "Low" in investment_budget:
@@ -329,23 +335,62 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
     st.markdown(f"**⚠️ Agronomic Risks / ఇతర వ్యవసాయ సవాళ్లు:**\n{profile['issues']}")
 
     st.info(
-        f"❄️ **Nearest Cold Storage Facility ({district_tag} Region):**\n"
-        f"- **Facility Name / శీతల గిడ్డంగి పేరు:** {storage_name}\n"
+        f"❄️ **Nearest Cold Storage Facility ({district_tag} Region) / సమీప శీతల గిడ్డంగి:**\n"
+        f"- **Facility Name / పేరు:** {storage_name}\n"
         f"- **Capacity / సామర్థ్యం:** {storage_cap} | **Distance / దూరం:** {storage_dist}\n"
-        f"- **Fertilizer Sourcing Channel / ఎరువుల సేకరణ మార్గం:** {fertilizer_clean}\n"
-        f"- *Ideal for safe storage of perishable yields, seed preservation, and post-harvest price buffering.*"
+        f"- **Fertilizer Sourcing Channel / ఎరువుల సేకరణ:** {fertilizer_clean}\n"
+        f"- *Soil Health Status based on History / నేల ఆరోగ్యం:* {soil_health_proxy}\n"
+        f"- *Ideal for safe storage of perishable yields and market price buffering.*"
     )
             
     st.warning("💡 **Advisory Note / ముఖ్య గమనిక:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
 
+    # --- STEP 7: UNIVERSITY AGRONOMIC & AGROFORESTRY BEST PRACTICES (ANGRAU / PJTSAU) ---
+    st.header("7. University Agro-Advisory & Agroforestry Guidelines / విశ్వవిద్యాలయ సూచనలు & వ్యవసాయ అడవి విధానాలు")
+
+    university_practices_db = {
+        "Redgram": {
+            "intercrop": "Intercrop with Pearl Millet (Sajja) or Groundnut (1:7 ratio) to maximize returns and control soil erosion.\n*తెలుగు:* సజ్జ లేదా వేరుశెనగతో అంతరపంటగా సాగు చేయడం ద్వారా అదనపు ఆదాయం మరియు నేల కోత నివారణ.",
+            "bund_trees": "Plant Drumstick (Moringa / మునగ) or Subabul on bunds for secondary income and fodder.\n*తెలుగు:* పొలం గట్లపై మునగ లేదా సుబాబుల్ చెట్లను పెంచడం ద్వారా అదనపు ఆదాయం మరియు మేత.",
+            "moisture": "Perform deep summer ploughing across slopes immediately after first pre-monsoon showers.\n*తెలుగు:* తొలి తొలకరి వర్షాల తర్వాత వాలుకు అడ్డంగా లోతు దుక్కులు దున్నాలి."
+        },
+        "Groundnut": {
+            "intercrop": "Pair with Castor (Amudam) or Redgram in a 7:1 row arrangement for pest barrier protection.\n*తెలుగు:* 7:1 నిష్పత్తిలో ఆముదం లేదా కందిని అంతరపంటగా వేయడం ద్వారా తెగుళ్ల బెడద తగ్గుతుంది.",
+            "bund_trees": "Plant Silver Oak or Tamarind on field perimeters; avoid shading the crop canopy.\n*తెలుగు:* పొలం సరిహద్దుల్లో సిల్వర్ ఓక్ లేదా చింత చెట్లను పెంచాలి (నీడ పడకుండా చూసుకోవాలి).",
+            "moisture": "Implement 'Stale Seedbed' technique and apply gypsum at flowering for moisture retention and pod development.\n*తెలుగు:* కాయ గట్టిపడే దశలో జిప్సమ్ వేయడం మరియు తేమ సంరక్షణ పద్ధతులు పాటించాలి."
+        },
+        "Cotton": {
+            "intercrop": "Intercrop with Green Gram (Pesalu) or Black Gram (Minumulu) during initial 45 days.\n*తెలుగు:* పత్తిలో మొదటి 45 రోజులు పెసలు లేదా మినుములు అంతరపంటగా సాగు చేయవచ్చు.",
+            "bund_trees": "Establish Teak (Teeku) or Casuarina on northern farm boundaries as a windbreak and future timber revenue.\n*తెలుగు:* ఉత్తర సరిహద్దులో టేకు లేదా జీలుగు చెట్లను పెంచడం ద్వారా ఈదురు గాలుల నుండి రక్షణ మరియు భవిష్యత్ ఆదాయం.",
+            "moisture": "Adopt ridge-and-furrow method during the last inter-cultivation to prevent waterlogging and conserve rainwater.\n*తెలుగు:* అంతర కృషి సమయంలో బోదెలు ఏర్పాటు చేసి వర్షపు నీటిని నిల్వ చేయాలి."
+        },
+        "Paddy": {
+            "intercrop": "Direct Seeded Rice (DSR) or Greengram green manuring incorporation 10 days before transplanting.\n*తెలుగు:* నారు పోసే ముందు పచ్చిరొట్ట ఎరువును (జనుము/పిల్లిపెసర) నేలలో కలియదున్నాలి.",
+            "bund_trees": "Plant Glyricidia or Pongamia (Kanuga) along irrigation channels for green leaf manure and boundary strengthening.\n*తెలుగు:* నీటి కాలువల వెంట గ్లైరిసిడియా లేదా కానుగ చెట్లను పెంచడం ద్వారా ఆకు ఎరువు లభిస్తుంది.",
+            "moisture": "Alternate Wetting and Drying (AWD) irrigation method to save 30% water and prevent tiller rot.\n*తెలుగు:* ఆరబెట్టి తడిపెట్టే విధానం (AWD) ద్వారా 30% నీటిని ఆదా చేయవచ్చు."
+        },
+        "Millets": {
+            "intercrop": "Intercrop Finger Millet (Ragi) with Cowpea (Alasandalu) for balanced soil nitrogen maintenance.\n*తెలుగు:* రాగులతో పాటు అలసందలను అంతరపంటగా వేయడం ద్వారా నేలలో నత్రజని స్థిరపడుతుంది.",
+            "bund_trees": "Grow Subabul or fruit-bearing Sapota trees on farm boundaries.\n*తెలుగు:* పొలం హద్దుల్లో సుబాబుల్ లేదా సపోటా చెట్లను పెంచవచ్చు.",
+            "moisture": "In-situ moisture conservation using contour bunding and dead furrows.\n*తెలుగు:* సమతల గట్లు మరియు డెడ్ ఫర్రోస్ ద్వారా నేలలో తేమను సంరక్షించాలి."
+        }
+    }
+
+    uni_guide = university_practices_db.get(matched_key, university_practices_db["Redgram"])
+
+    with st.expander("🎓 View Official ANGRAU / PJTSAU University Agroforestry & Best Practices Guidelines / విశ్వవిద్యాలయ మార్గదర్శకాలు"):
+        st.markdown(f"**🌿 Recommended Intercropping / అంతరపంటల విధానం:**\n{uni_guide['intercrop']}")
+        st.markdown(f"**🌳 Revenue-Bearing Boundary Trees / సరిహద్దు ఆదాయ వృక్షాలు:**\n{uni_guide['bund_trees']}")
+        st.markdown(f"**💧 Moisture Conservation Timeline / తేమ సంరక్షణ కాలపట్టిక:**\n{uni_guide['moisture']}")
+
     # --- WHATSAPP SHARE BUTTON INTEGRATION ---
     wa_message = (
         f"🌱 *Smart Agro Advisory ({selected_location_str})*\n"
-        f"• *Crop:* {profile['telugu']}\n"
-        f"• *Expected Yield:* {profile['yield']}\n"
-        f"• *Returns:* {est_return}\n"
-        f"• *Sowing Window:* {profile['sowing']}\n"
-        f"• *Cold Storage:* {storage_name} ({storage_dist})\n"
+        f"• *Crop / పంట:* {profile['telugu']}\n"
+        f"• *Expected Yield / దిగుబడి:* {profile['yield']}\n"
+        f"• *Returns / ఆదాయం:* {est_return}\n"
+        f"• *Sowing Window / విత్తే సమయం:* {profile['sowing']}\n"
+        f"• *Cold Storage / శీతల గిడ్డంగి:* {storage_name} ({storage_dist})\n"
         f"• *Advisory:* Verify via local RBK."
     )
     encoded_message = urllib.parse.quote(wa_message)
