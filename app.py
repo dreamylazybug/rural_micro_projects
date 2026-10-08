@@ -13,7 +13,7 @@ st.set_page_config(
 # App Header
 st.title("🌱 Smart Crop & Livelihood Recommender")
 st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Select location in English/Telugu, configure water sources, snap a soil photo, and evaluate economic returns and nearest cold storage.")
+st.markdown("Select location in English/Telugu, configure water sources, snap a soil photo, and evaluate complete bilingual crop advisories and cold storage.")
 
 st.divider()
 
@@ -41,7 +41,6 @@ selected_location_str = st.selectbox(
     index=0
 )
 
-# Extract English place name before parenthesis for geocoding API lookup
 place_input = selected_location_str.split("(")[0].strip()
 district_tag = selected_location_str.split(",")[1].strip() if "," in selected_location_str else "AP/TS"
 
@@ -101,7 +100,7 @@ with st.expander("⚙️ Configure Parameters for Selected Water Sources / ఎ�
         st.subheader("Borewell Parameters / బోర్‌వెల్ వివరాలు")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step=50)
+            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step, 50)
         with col_w2:
             power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=9)
 
@@ -120,10 +119,10 @@ with st.expander("⚙️ Configure Parameters for Selected Water Sources / ఎ�
         )
 
     if any("Rainfed" in src for src in water_sources):
-        st.info("🌧️ **Rainfed Mode Active:** Recommending in-situ moisture conservation and drought-tolerant crop lines.")
+        st.info("🌧️ **Rainfed Mode Active / వర్షాధారిత విధానం:** Recommending in-situ moisture conservation and drought-tolerant crop lines.")
 
 if any("Borewell" in src for src in water_sources) and borewell_depth > 600:
-    st.warning("⚠️ **Deep Aquifer Alert:** High pumping cost and depletion risk detected.")
+    st.warning("⚠️ **Deep Aquifer Alert / లోతైన భూగర్భ జల హెచ్చరిక:** High pumping cost and depletion risk detected.")
 
 st.divider()
 
@@ -144,9 +143,9 @@ with col_e2:
     fertilizer_mode = st.selectbox(
         "Fertilizer Access / ఎరువుల సేకరణ మార్గం:",
         [
-            "RBK Subsidized Stocks Available (రైతు భరోసా కేంద్రం)",
-            "Open Market / Local Agro-Dealer Purchase",
-            "Organic / Natural Farming (సేంద్రీయ ఎరువులు)"
+            "RBK Subsidized Stocks Available (రైతు భరోసా కేంద్రం సబ్సిడీ ఎరువులు)",
+            "Open Market / Local Agro-Dealer Purchase (ఓపెన్ మార్కెట్ / స్థానిక డీలర్)",
+            "Organic / Natural Farming (సేంద్రీయ / ప్రకృతి వ్యవసాయ ఎరువులు)"
         ]
     )
 
@@ -176,8 +175,56 @@ if soil_image_file is not None:
 
 st.divider()
 
-# --- STEP 5: RECOMMENDATION ENGINE, RETURNS & NEAREST COLD STORAGE ---
-st.header("5. Crop Viability, Returns & Cold Storage / పంట మరియు శీతల గిడ్డంగి వివరాలు")
+# --- STEP 5: BILINGUAL COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY ---
+st.header("5. Complete Crop Advisory & Livelihood Plan / పూర్తి పంట మరియు ఆర్థిక సలహా")
+
+crop_advisory_db = {
+    "Redgram": {
+        "telugu": "కందిపప్పు / కంది పంట (Redgram)",
+        "sowing": "June – July / జూన్ – జూలై (With onset of Southwest Monsoon / తొలి తొలకరి వర్షాలు)",
+        "harvest": "December – January / డిసెంబర్ – జనవరి (150-180 Days / రోజులు)",
+        "yield": "6 - 8 Quintals / Acre (క్వింటాళ్లు / ఎకరా)",
+        "fertilizers": "Basal dose: 20 kg N, 40 kg P2O5 per acre. Foliar spray of 2% Urea at flowering.\n*తెలుగు వివరాలు:* ఎకరానికి 20 కిలోల నత్రజని, 40 కిలోల భాస్వరం అందించాలి. పూత దశలో 2% యూరియా పిచికారీ చేయాలి.",
+        "pests": "Pod Borer & Maruca. Mitigation: Spray Chlorantraniliprole or Neem oil.\n*తెలుగు వివరాలు:* కాయ తొలుచు పురుగు (శనగ పచ్చ పురుగు). నివారణ: క్లోరాంట్రానిలిప్రోల్ లేదా వేప నూనె పిచికారీ చేయాలి.",
+        "issues": "Sensitive to waterlogging; requires well-drained red soils.\n*తెలుగు వివరాలు:* నీరు నిల్వ ఉండటాన్ని తట్టుకోలేదు; నీరు ఇంకిపోయే ఎర్ర నేలలు అనుకూలం."
+    },
+    "Groundnut": {
+        "telugu": "వేరుశెనగ / వేరుశనగ కాయ (Groundnut)",
+        "sowing": "July (Kharif) or November (Rabi) / జూలై (ఖరీఫ్) లేదా నవంబర్ (రబీ)",
+        "harvest": "October (Kharif) / March (Rabi) (105-120 Days / రోజులు)",
+        "yield": "8 - 10 Quintals / Acre (Shell kernels / కాయ దిగుబడి)",
+        "fertilizers": "Gypsum @ 200 kg/acre at flowering stage for pod filling; 16-20-0 NPK base.\n*తెలుగు వివరాలు:* కాయ గట్టిపడే దశలో ఎకరానికి 200 కిలోల జిప్సమ్ వేయాలి; 16-20-0 ఎన్పీకే బేస్.",
+        "pests": "Leaf Miner & Collar Rot. Mitigation: Seed treatment with Trichoderma; neem-based sprays.\n*తెలుగు వివరాలు:* ఆకు ముడుత పురుగు మరియు వేరు కుళ్ళు తెగులు. నివారణ: ట్రైకోడెర్మాతో విత్తన శుద్ధి మరియు వేప మందుల పిచికారీ.",
+        "issues": "Terminal drought vulnerability; requires critical irrigation at pegging stage.\n*తెలుగు వివరాలు:* చివరి దశలో కరువు ప్రమాదం ఉంది; పిందె దశలో తప్పనిసరిగా తడి ఇవ్వాలి."
+    },
+    "Cotton": {
+        "telugu": "బిటి పత్తి / పత్తి పంట (Bt Cotton)",
+        "sowing": "June – July (Rainfed/Irrigated) / జూన్ – జూలై (వర్షాధారితం / నీటి వసతి)",
+        "harvest": "November – February (Multi-picking over 150-180 Days)\n*తెలుగు వివరాలు:* నవంబర్ – ఫిబ్రవరి (150-180 రోజుల్లో విడతల వారీగా ఏరుకోలు)",
+        "yield": "10 - 15 Quintals / Acre (Seed cotton / పత్తి దిగుబడి)",
+        "fertilizers": "Balanced NPK (120:60:60 kg/ha split across 4 stages) + Magnesium Sulphate spray.\n*తెలుగు వివరాలు:* సమతుల్య ఎరువులు (120:60:60 కిలోలు/హెక్టారుకు 4 విడతలుగా) + మెగ్నీషియం సల్ఫేట్ పిచికారీ.",
+        "pests": "Pink Bollworm & Sucking Pests. Mitigation: Pheromone traps (5/acre), Flonicamid sprays.\n*తెలుగు వివరాలు:* గులాబీ రంగు ఆశించే పురుగు మరియు రసపీల్చు పురుగులు. నివారణ: లింగాకర్షక బుట్టలు (ఎకరానికి 5), ఫ్లోనికామిడ్ పిచికారీ.",
+        "issues": "High capital investment required; strict pesticide resistance management needed.\n*తెలుగు వివరాలు:* ఎక్కువ పెట్టుబడి అవసరం; పురుగు మందుల నిరోధకతను నిర్వహించడం ముఖ్యం."
+    },
+    "Paddy": {
+        "telugu": "వరి / ధాన్యం పంట (Paddy / Rice)",
+        "sowing": "July (Kharif) / January (Rabi) / జూలై (ఖరీఫ్ - వానకాలం) / జనవరి (రబీ - యాసంగి)",
+        "harvest": "November / April (120-140 Days / రోజులు)",
+        "yield": "22 - 28 Quintals / Acre (Raw paddy / ముడి ధాన్యం)",
+        "fertilizers": "Split application of Nitrogen (N) across basal, tillering, and panicle initiation stages.\n*తెలుగు వివరాలు:* నత్రజని ఎరువును దుక్కిలో, పిలకల దశలో మరియు తిలక దశలో విడతల వారీగా అందించాలి.",
+        "pests": "Stem Borer & Brown Planthopper (BPH). Mitigation: Light traps, cartap hydrochloride granules.\n*తెలుగు వివరాలు:* కాండం తొలుచు పురుగు మరియు ఆశించే సుడి దోమ. నివారణ: కాంతి బుట్టలు, కార్టాప్ హైడ్రోక్లోరైడ్ గుళికలు.",
+        "issues": "High water intensity; vulnerable to unseasonal cyclone rains during harvest.\n*తెలుగు వివరాలు:* అధిక నీరు అవసరం; కోత సమయంలో అకాల తుఫాను వర్షాల వల్ల నష్టం జరిగే అవకాశం ఉంది."
+    },
+    "Millets": {
+        "telugu": "శ్రీ ధాన్యాలు / జొన్నలు (Millets / Sorghum)",
+        "sowing": "July (Monsoon onset) / జూలై (రుతుపవనాల ప్రారంభం)",
+        "harvest": "October – November (100-110 Days / రోజులు)",
+        "yield": "7 - 10 Quintals / Acre (క్వింటాళ్లు / ఎకరా)",
+        "fertilizers": "Low input requirement; organic compost or minimal NPK.\n*తెలుగు వివరాలు:* తక్కువ ఎరువులు సరిపోతాయి; సేంద్రీయ ఎరువులు లేదా తక్కువ మోతాదులో ఎన్పీకే.",
+        "pests": "Shoot Fly. Mitigation: Seed treatment with Imidacloprid, timely sowing.\n*తెలుగు వివరాలు:* ఈగ తెగులు (షూ ఫ్లై). నివారణ: ఇమిడాక్లోప్రిడ్‌తో విత్తన శుద్ధి మరియు సరైన సమయంలో విత్తనాలు వేయడం.",
+        "issues": "Bird damage during grain filling stage; requires community scare tactics or nets.\n*తెలుగు వివరాలు:* గింజ పాలు పోసే సమయంలో పిచ్చుకలు/పక్షుల బెడద; కాపలా కాయడం లేదా వలలు అవసరం."
+    }
+}
 
 cold_storage_db = {
     "Guntur": {"name": "M/s Sri Ramanjaneya Cold Storage (Ankireddypalem)", "capacity": "8,650 MT", "distance": "Nearby Mandal Hub"},
@@ -198,44 +245,52 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
     is_only_rainfed = len(water_sources) == 0 or ("Rainfed" in water_sources and len(water_sources) == 1)
 
     if is_only_rainfed:
-        if "Red Sandy" in detected_soil_type:
-            crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
-            est_return = "₹25,000 – ₹40,000 net return/acre"
-        else:
-            crop = "Sorghum / Jonna (జొన్నలు) or Pearl Millet (సజ్జలు)"
-            est_return = "₹20,000 – ₹35,000 net return/acre"
+        matched_key = "Redgram" if "Red Sandy" in detected_soil_type else "Millets"
+        est_return = "₹25,000 – ₹40,000 net return/acre"
     elif "Low" in investment_budget:
-        crop = "Millets or Pulses / Green Gram (పెసలు)"
+        matched_key = "Millets"
         est_return = "₹25,000 – ₹40,000 net return/acre"
     elif "High" in investment_budget and not is_only_rainfed:
-        if "Black Cotton" in detected_soil_type:
-            crop = "Commercial Cotton (బిటి పత్తి) or Chillies (మిరప)"
-            est_return = "₹70,000 – ₹1,20,000 gross return/acre"
-        else:
-            crop = "Hybrid Paddy / Varalu (వరి) or Maize (మొక్కజొన్న)"
-            est_return = "₹50,000 – ₹80,000 gross return/acre"
+        matched_key = "Cotton" if "Black Cotton" in detected_soil_type else "Paddy"
+        est_return = "₹70,000 – ₹1,20,000 gross return/acre"
     else:
-        crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
+        matched_key = "Groundnut" if "Red Sandy" in detected_soil_type else "Redgram"
         est_return = "₹35,000 – ₹55,000 net return/acre"
+
+    profile = crop_advisory_db.get(matched_key, crop_advisory_db["Redgram"])
 
     storage_name = nearest_storage['name']
     storage_cap = nearest_storage['capacity']
     storage_dist = nearest_storage['distance']
     fertilizer_clean = fertilizer_mode.split('(')[0].strip()
 
-    st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {crop}")
+    st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {profile['telugu']}")
     
     col_r1, col_r2 = st.columns(2)
     with col_r1:
-        st.metric(label="Estimated Financial Returns", value=est_return)
+        st.metric(label="Estimated Yield / అంచనా దిగుబడి", value=profile['yield'])
     with col_r2:
-        st.metric(label="Fertilizer Sourcing Channel", value=fertilizer_clean)
-        
+        st.metric(label="Estimated Returns / నికర ఆదాయం", value=est_return)
+
+    st.markdown("---")
+    st.subheader("📅 Crop Schedule & Management / పంట కాలపట్టిక మరియు యాజమాన్యం")
+    
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        st.markdown(f"**🌱 Sowing Window / విత్తే సమయం:**\n{profile['sowing']}")
+    with col_s2:
+        st.markdown(f"**🌾 Harvest Window / కోత సమయం:**\n{profile['harvest']}")
+
+    st.markdown(f"**🧪 Recommended Fertilizers & Telugu Info / ఎరువుల మోతాదు మరియు వివరాలు:**\n{profile['fertilizers']}")
+    st.markdown(f"**🐛 Expected Pests & Mitigation / తెగుళ్లు మరియు నివారణ పద్ధతులు:**\n{profile['pests']}")
+    st.markdown(f"**⚠️ Agronomic Risks / ఇతర వ్యవసాయ సవాళ్లు:**\n{profile['issues']}")
+
     st.info(
         f"❄️ **Nearest Cold Storage Facility ({district_tag} Region):**\n"
-        f"- **Facility Name:** {storage_name}\n"
-        f"- **Capacity:** {storage_cap} | **Proximity:** {storage_dist}\n"
+        f"- **Facility Name / శీతల గిడ్డంగి పేరు:** {storage_name}\n"
+        f"- **Capacity / సామర్థ్యం:** {storage_cap} | **Distance / దూరం:** {storage_dist}\n"
+        f"- **Fertilizer Sourcing Channel / ఎరువుల సేకరణ మార్గం:** {fertilizer_clean}\n"
         f"- *Ideal for safe storage of perishable yields, seed preservation, and post-harvest price buffering.*"
     )
             
-    st.warning("💡 **Advisory Note:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
+    st.warning("💡 **Advisory Note / ముఖ్య గమనిక:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
