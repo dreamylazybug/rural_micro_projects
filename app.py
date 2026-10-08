@@ -16,6 +16,17 @@ st.title("🌱 Smart Crop & Livelihood Recommender")
 st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
 st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, and instant WhatsApp sharing.")
 
+# --- DEMO PRE-POPULATION HELPER ---
+with st.container():
+    st.info("💡 **New here? Click below to load a sample farm profile and see how it works instantly!**\n\n*కొత్తవారా? కింద ఉన్న బటన్‌ను క్లిక్ చేసి ఒక నమూనా ఫామ్ ప్రొఫైల్‌ను లోడ్ చేయండి!*")
+    if st.button("🚀 Load Sample Scenario / ఉదాహరణ ప్రొఫైల్‌ను లోడ్ చేయి"):
+        st.session_state["demo_loaded"] = True
+    else:
+        if "demo_loaded" not in st.session_state:
+            st.session_state["demo_loaded"] = False
+
+is_demo = st.session_state["demo_loaded"]
+
 st.divider()
 
 # --- STEP 1: BILINGUAL MANDAL AUTO-COMPLETE & VOICE/TEXT SEARCH ---
@@ -27,7 +38,7 @@ ap_ts_mandals = [
     "Rajahmundry (రాజమహేంద్రవరం), East Godavari", "Kakinada (కాకినాడ), East Godavari", "Amalapuram (అమలాపురం), East Godavari",
     "Nandyal (నంద్యాల), Kurnool", "Adoni (ఆదోని), Kurnool", "Kurnool Rural (కర్నూలు గ్రామీణ), Kurnool",
     "Anantapur (అనంతపురం), Anantapur", "Dharmavaram (ధర్మవరం), Anantapur", "Hindupur (హిందూపూర్), Anantapur",
-    "Kadapa (ಕడప/కడప), YSR Kadapa", "Proddatur (ప్రొద్దుటూరు), YSR Kadapa", "Tadipatri (తాడిపత్రి), Anantapur",
+    "Kadapa (కడప), YSR Kadapa", "Proddatur (ప్రొద్దుటూరు), YSR Kadapa", "Tadipatri (తాడిపత్రి), Anantapur",
     "Nellore (నెల్లూరు), Nellore", "Ongole (ఒంగోలు), Prakasam", "Kavali (కావలి), Nellore",
     "Srikakulam (శ్రీకాకుళం), Srikakulam", "Vizianagaram (విజయనగరం), Vizianagaram", "Visakhapatnam (విశాఖపట్నం), Visakhapatnam",
     "Warangal (వరంగల్), Warangal", "Hanamkonda (హనుమకొండ), Warangal", "Khammam (ఖమ్మం), Khammam", "Bhadrachalam (భద్రాచలం), Khammam",
@@ -36,16 +47,17 @@ ap_ts_mandals = [
     "Palakollu (పాలకొల్లు), West Godavari", "Narsapuram (నరసాపురం), West Godavari"
 ]
 
+default_mandal_index = 1 if is_demo else 0  # Mangalagiri for demo
+
 selected_location_str = st.selectbox(
-    "Search or Select Mandal / Town / మండలం లేదా పట్టణం కోసం వెతకండి (టైప్ చేయండి లేదా మాట్లాడండి):",
+    "Search or Select Mandal / Town / మండలం లేదా పట్టణం కోసం వెతకండి:",
     options=ap_ts_mandals,
-    index=0
+    index=default_mandal_index
 )
 
 place_input = selected_location_str.split("(")[0].strip()
 district_tag = selected_location_str.split(",")[1].strip() if "," in selected_location_str else "AP/TS"
 
-# Offline-First Cached Geocoding API
 @st.cache_data(show_spinner=False)
 def get_coordinates(place_name):
     geo_url = f"https://geocoding-api.open-meteo.com/v1/search?name={place_name}&count=1&language=en&format=json"
@@ -60,7 +72,6 @@ def get_coordinates(place_name):
 
 lat, lon, place_found = get_coordinates(place_input)
 
-# Offline-First Cached Weather API
 @st.cache_data(show_spinner=False)
 def fetch_weather_data(latitude, longitude):
     url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,relative_humidity_2m&elevation=true"
@@ -82,6 +93,8 @@ st.divider()
 # --- STEP 2: MULTI-SOURCE WATER & HYDROLOGY ---
 st.header("2. Water Sources & Hydrology / నీటి వనరులు మరియు హైడ్రాలజీ")
 
+default_waters = ["Borewell / Tube well (బోర్‌వెల్ / ట్యూబ్‌వెల్)", "Canal Irrigation / Delta Flow (కాల్వ నీరు / ప్రాజెక్ట్)"] if is_demo else ["Borewell / Tube well (బోర్‌వెల్ / ట్యూబ్‌వెల్)"]
+
 water_sources = st.multiselect(
     "Select all available irrigation sources / లభిస్తున్న అన్ని నీటి పారుదల వనరులను ఎంచుకోండి:",
     [
@@ -90,10 +103,10 @@ water_sources = st.multiselect(
         "Tank / Cheruvu (స్థానిక చెరువు నీరు)",
         "Rainfed / Dryland (వర్షాధారితం - నీటి వసతి లేదు)"
     ],
-    default=["Borewell / Tube well (బోర్‌వెల్ / ట్యూబ్‌వెల్)"]
+    default=default_waters
 )
 
-borewell_depth = 300
+borewell_depth = 350 if is_demo else 300
 power_hours = 9
 canal_status = "Normal Flow"
 tank_level = "Half Capacity"
@@ -103,9 +116,9 @@ with st.expander("⚙️ Configure Parameters for Selected Water Sources / ఎ�
         st.subheader("Borewell Parameters / బోర్‌వెల్ వివరాలు")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step=50)
+            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=borewell_depth, step=50)
         with col_w2:
-            power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=9)
+            power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=power_hours)
 
     if any("Canal" in src for src in water_sources):
         st.subheader("Canal Irrigation Parameters / కాల్వ నీటి సరఫరా")
@@ -137,8 +150,8 @@ with col_e1:
     investment_budget = st.selectbox(
         "Available Capital / పెట్టుబడి బడ్జెట్ (per Acre):",
         [
-            "Low (< ₹15,000 / Acre - Low Input)",
             "Medium (₹15,000 - ₹35,000 / Acre)",
+            "Low (< ₹15,000 / Acre - Low Input)",
             "High (> ₹35,000 / Acre - Intensive Commercial)"
         ]
     )
@@ -156,11 +169,15 @@ st.divider()
 
 # --- STEP 4: CAMERA INPUT FOR SOIL ANALYSIS ---
 st.header("4. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
-st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
+if is_demo:
+    st.success("🟢 **Demo Mode Active:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల* (No camera upload required for preview).")
+else:
+    st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
 
-soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి")
+soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి") if not is_demo else None
 
-detected_soil_type = "Red Sandy Loam (ఎర్ర నేలలు)"
+detected_soil_type = "Black Cotton Soil / నల్ల రేగడి నేల (Regur)" if is_demo else "Red Sandy Loam (ఎర్ర నేలలు)"
+
 if soil_image_file is not None:
     image = Image.open(soil_image_file)
     st.image(image, caption="Captured Soil Sample / తీయబడిన నేల నమూనా", width=300)
@@ -174,7 +191,7 @@ if soil_image_file is not None:
     else:
         detected_soil_type = "Alluvial Delta Soil / డెల్టా ఒండ్రు నేల"
         
-    st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:** {detected_soil_type}")
+st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:** {detected_soil_type}")
 
 st.divider()
 
@@ -244,7 +261,8 @@ cold_storage_db = {
 
 nearest_storage = cold_storage_db.get(district_tag, {"name": "Local District Co-op Cold Storage Facility", "capacity": "Standard 2,000 MT", "distance": "Within District Radius"})
 
-if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary"):
+# Auto-run if demo is loaded or button is clicked
+if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary") or is_demo:
     is_only_rainfed = len(water_sources) == 0 or ("Rainfed" in water_sources and len(water_sources) == 1)
 
     if is_only_rainfed:
@@ -259,6 +277,11 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
     else:
         matched_key = "Groundnut" if "Red Sandy" in detected_soil_type else "Redgram"
         est_return = "₹35,000 – ₹55,000 net return/acre"
+
+    # If demo mode is active, force cotton for Black Cotton soil in Guntur
+    if is_demo:
+        matched_key = "Cotton"
+        est_return = "₹75,000 – ₹1,10,000 gross return/acre"
 
     profile = crop_advisory_db.get(matched_key, crop_advisory_db["Redgram"])
 
