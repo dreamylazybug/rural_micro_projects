@@ -217,24 +217,25 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
         crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
         est_return = "₹35,000 – ₹55,000 net return/acre"
 
+    # Extract values cleanly prior to f-string display to prevent syntax errors
+    storage_name = nearest_storage['name']
+    storage_cap = nearest_storage['capacity']
+    storage_dist = nearest_storage['distance']
+    fertilizer_clean = fertilizer_mode.split('(')[0].strip()
+
     st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {crop}")
     
     col_r1, col_r2 = st.columns(2)
     with col_r1:
         st.metric(label="Estimated Financial Returns", value=est_return)
     with col_r2:
-        st.metric(label="Fertilizer Sourcing Channel", value=fertilizer_mode.split('(')[0].strip())
+        st.metric(label="Fertilizer Sourcing Channel", value=fertilizer_clean)
         
-    st.info(f"❄️ **Nearest Cold Storage Facility ({district_tag} Region):**\n"
-            f"- **Facility Name:** {nearest_storage['name']}\n"
-            f"- **Capacity:** {nearest_storage['capacity']} | **Proximity:** {nearest_storage['distance']}\n"
-            f"- *Ideal for safe storage of perishable yields, seed preservation, and post-harvest price buffering.*")
+    st.info(
+        f"❄️ **Nearest Cold Storage Facility ({district_tag} Region):**\n"
+        f"- **Facility Name:** {storage_name}\n"
+        f"- **Capacity:** {storage_cap} | **Proximity:** {storage_dist}\n"
+        f"- *Ideal for safe storage of perishable yields, seed preservation, and post-harvest price buffering.*"
+    )
             
     st.warning("💡 **Advisory Note:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
-
----
-
-## Immediate Next Steps
-
-1. Paste this updated code directly into your `app.py` file on GitHub.
-2. Commit the changes and refresh your Streamlit Community Cloud app.
