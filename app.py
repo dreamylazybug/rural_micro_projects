@@ -3,15 +3,25 @@ import requests
 from PIL import Image
 import numpy as np
 
-st.set_page_config(page_title="AP & TS Granular Crop Recommender", page_icon="🌱", layout="centered")
+# Page Configuration
+st.set_page_config(
+    page_title="AP & TS Granular Crop Recommender",
+    page_icon="🌱",
+    layout="centered"
+)
 
+# App Header
 st.title("🌱 Granular Smart Crop Recommender")
 st.subheader("మండల స్థాయి పంట సిఫార్సు వ్యవస్థ")
 
 st.markdown("Type your Mandal, Town, or Village name to pull precise local weather and elevation.")
 
-# --- GRANULAR LOCATION SEARCH ---
-location_input = st.text_input("Enter Mandal / Village Name (e.g., Mangalagiri, Siddipet):", value="Vijayawada")
+st.divider()
+
+# --- STEP 1: GRANULAR LOCATION & WEATHER API ---
+st.header("1. Location & Climate / స్థానం మరియు వాతావరణం")
+
+location_input = st.text_input("Enter Mandal / Village Name (e.g., Mangalagiri, Siddipet, Pamarru):", value="Vijayawada")
 
 # Fetch coordinates dynamically using Open-Meteo Geocoding API (Free, no key required)
 @st.cache_data
@@ -45,18 +55,22 @@ def fetch_weather_data(latitude, longitude):
 
 current_temp, current_humidity, elevation = fetch_weather_data(lat, lon)
 
-st.success(📍 **Found Location:** {place_found} ({state_found}) | **Temp:** {current_temp}°C | **Elevation:** {elevation}m)
+# Corrected f-string with proper quotation marks
+st.success(f"📍 **Found Location:** {place_found} ({state_found}) | **Temp:** {current_temp}°C | **Elevation:** {elevation}m")
 
 st.divider()
 
-# --- CAMERA INPUT FOR SOIL ANALYSIS ---
+# --- STEP 2: CAMERA INPUT FOR SOIL ANALYSIS ---
 st.header("2. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
+st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture to categorize soil type.")
+
 soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి")
 
 detected_soil_type = "Red Sandy Loam (ఎర్ర నేలలు)"
 if soil_image_file is not None:
     image = Image.open(soil_image_file)
-    st.image(image, caption="Captured Soil Sample", width=300)
+    st.image(image, caption="Captured Soil Sample / తీయబడిన నేల నమూనా", width=300)
+    
     img_array = np.array(image)
     avg_color = img_array.mean(axis=(0, 1))
     
@@ -67,12 +81,13 @@ if soil_image_file is not None:
     else:
         detected_soil_type = "Alluvial Delta Soil / డెల్టా ఒండ్రు నేల"
         
-    st.info(🔍 **AI Soil Classification:** {detected_soil_type})
+    st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు ఫలితం:** {detected_soil_type}")
 
 st.divider()
 
-# --- RECOMMENDATION ENGINE ---
+# --- STEP 3: RECOMMENDATION ENGINE ---
 st.header("3. Crop Suggestion / పంట సిఫార్సు")
+
 if st.button("Generate Recommendation / సిఫార్సును రూపొందించు", type="primary"):
     if "Black Cotton" in detected_soil_type:
         crop = "Cotton (పత్తి) or Bengal Gram (శనగలు)"
@@ -81,5 +96,5 @@ if st.button("Generate Recommendation / సిఫార్సును రూప
     else:
         crop = "Paddy / Varalu (వరి) or Maize (మొక్కజొన్న)"
 
-    st.success(✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {crop})
-    st.warning("💡 **Advisory Note:** Consult your local Rythu Bharosa Kendram (RBK) agricultural extension officer.")
+    st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {crop}")
+    st.warning("💡 **Advisory Note:** Consult your local Rythu Bharosa Kendram (RBK) agricultural extension officer before final sowing.")
