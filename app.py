@@ -5,15 +5,15 @@ import numpy as np
 
 # Page Configuration
 st.set_page_config(
-    page_title="AP & TS Smart Crop Recommender",
+    page_title="AP & TS Smart Agro-Economic Recommender",
     page_icon="🌱",
     layout="centered"
 )
 
 # App Header
-st.title("🌱 Smart Crop Recommendation System")
-st.subheader("స్మార్ట్ పంట సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Select your local mandal, snap a soil photo, specify water hydrology, and get instant bilingual crop recommendations.")
+st.title("🌱 Smart Crop & Livelihood Recommender")
+st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
+st.markdown("Integrates location weather, multi-source water hydrology, soil visual AI, investment budgeting, fertilizer access, and nearest cold storage mapping.")
 
 st.divider()
 
@@ -42,6 +42,7 @@ selected_location_str = st.selectbox(
 )
 
 place_input = selected_location_str.split(",")[0].strip()
+district_tag = selected_location_str.split(",")[1].strip() if "," in selected_location_str else "AP/TS"
 
 @st.cache_data
 def get_coordinates(place_name):
@@ -50,12 +51,12 @@ def get_coordinates(place_name):
         res = requests.get(geo_url, timeout=5).json()
         if "results" in res and len(res["results"]) > 0:
             result = res["results"][0]
-            return result["latitude"], result["longitude"], result.get("name", place_name), result.get("admin1", "AP/TS")
+            return result["latitude"], result["longitude"], result.get("name", place_name)
     except:
         pass
-    return 17.3850, 78.4867, place_name, "AP/TS"
+    return 17.3850, 78.4867, place_name
 
-lat, lon, place_found, state_found = get_coordinates(place_input)
+lat, lon, place_found = get_coordinates(place_input)
 
 @st.cache_data
 def fetch_weather_data(latitude, longitude):
@@ -71,50 +72,63 @@ def fetch_weather_data(latitude, longitude):
         return 28.5, 70.0, 300.0
 
 current_temp, current_humidity, elevation = fetch_weather_data(lat, lon)
-
 st.success(f"📍 **Selected Location:** {selected_location_str} | **Temp:** {current_temp}°C | **Elevation:** {elevation}m")
 
 st.divider()
 
-# --- STEP 2: WATER SOURCE & HYDROLOGY ---
-st.header("2. Water Source & Hydrology / నీటి వనరు మరియు హైడ్రాలజీ")
+# --- STEP 2: WATER SOURCES & HYDROLOGY ---
+st.header("2. Water Sources & Hydrology / నీటి వనరులు మరియు హైడ్రాలజీ")
 
-water_source = st.radio(
-    "Select primary irrigation source / ప్రధాన నీటి పారుదల వనరు:",
+water_sources = st.multiselect(
+    "Select available irrigation sources / లభిస్తున్న నీటి పారుదల వనరులు:",
     [
         "Borewell / Tube well (బోర్‌వెల్ / ట్యూబ్‌వెల్)",
         "Canal Irrigation / Delta Flow (కాల్వ నీరు / ప్రాజెక్ట్)",
         "Tank / Cheruvu (స్థానిక చెరువు నీరు)",
         "Rainfed / Dryland (వర్షాధారితం - నీటి వసతి లేదు)"
-    ]
+    ],
+    default=["Borewell / Tube well (బోర్‌వెల్ / ట్యూబ్‌వెల్)"]
 )
 
-borewell_depth, power_hours = 300, 9
-
-if "Borewell" in water_source:
-    with st.expander("⚙️ Advanced Borewell Specs (Optional) / బోర్‌వెల్ వివరాలు"):
-        col_w1, col_w2 = st.columns(2)
-        with col_w1:
-            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step=50)
-        with col_w2:
-            power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=9)
-            
-    if borewell_depth > 600:
-        st.warning("⚠️ **Deep Aquifer Alert:** High pumping cost and depletion risk detected. Prioritizing low-water-intensity crops.")
+borewell_depth = 300
+if any("Borewell" in src for src in water_sources):
+    borewell_depth = st.slider("Borewell Depth (Feet) / బోర్‌వెల్ లోతు", 100, 1200, 350, 50)
 
 st.divider()
 
-# --- STEP 3: CAMERA INPUT FOR SOIL ANALYSIS ---
-st.header("3. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
-st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
+# --- STEP 3: ECONOMIC & INPUT CONSTRAINTS (Funds & Fertilizers) ---
+st.header("3. Financials & Inputs / ఆర్థిక మరియు ఎరువుల లభ్యత")
 
+col_e1, col_e2 = st.columns(2)
+with col_e1:
+    investment_budget = st.selectbox(
+        "Available Capital / పెట్టుబడి బడ్జెట్ (per Acre):",
+        [
+            "Low (< ₹15,000 / Acre - Low Input)",
+            "Medium (₹15,000 - ₹35,000 / Acre)",
+            "High (> ₹35,000 / Acre - Intensive Commercial)"
+        ]
+    )
+with col_e2:
+    fertilizer_mode = st.selectbox(
+        "Fertilizer Access / ఎరువుల సేకరణ మార్గం:",
+        [
+            "RBK Subsidized Stocks Available (రైతు భరోసా కేంద్రం)",
+            "Open Market / Local Agro-Dealer Purchase",
+            "Organic / Natural Farming (రుచికరమైన సేంద్రీయ ఎరువులు)"
+        ]
+    )
+
+st.divider()
+
+# --- STEP 4: CAMERA INPUT FOR SOIL ANALYSIS ---
+st.header("4. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
 soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి")
 
 detected_soil_type = "Red Sandy Loam (ఎర్ర నేలలు)"
 if soil_image_file is not None:
     image = Image.open(soil_image_file)
     st.image(image, caption="Captured Soil Sample / తీయబడిన నేల నమూనా", width=300)
-    
     img_array = np.array(image)
     avg_color = img_array.mean(axis=(0, 1))
     
@@ -125,29 +139,57 @@ if soil_image_file is not None:
     else:
         detected_soil_type = "Alluvial Delta Soil / డెల్టా ఒండ్రు నేల"
         
-    st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు ఫలితం:** {detected_soil_type}")
+    st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:** {detected_soil_type}")
 
 st.divider()
 
-# --- STEP 4: RECOMMENDATION ENGINE ---
-st.header("4. Crop Suggestion / పంట సిఫార్సు")
+# --- STEP 5: RECOMMENDATION ENGINE, RETURNS & NEAREST COLD STORAGE ---
+st.header("5. Crop Viability, Returns & Cold Storage / పంట మరియు శీతల గిడ్డంగి వివరాలు")
 
-if st.button("Generate Recommendation / సిఫార్సును రూపొందించు", type="primary"):
-    if "Rainfed" in water_source:
-        if "Red Sandy" in detected_soil_type:
-            crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
-        else:
-            crop = "Sorghum / Jonna (జొన్నలు) or Pearl Millet (సజ్జలు)"
-    elif "Borewell" in water_source and borewell_depth > 600:
-        crop = "Millets, Castor (ఆముదం), or Green Gram (పెసలు) (Drought-resilient rotation)"
-    else:
+# Cold Storage Mapping Database based on District/Region
+cold_storage_db = {
+    "Guntur": {"name": "M/s Sri Ramanjaneya Cold Storage (Ankireddypalem)", "capacity": "8,650 MT", "distance": "Nearby Mandal Hub"},
+    "Krishna": {"name": "M/s Rasana Cold Storage Pvt Ltd (Gollapudi)", "capacity": "5,000 MT", "distance": "Vijayawada Regional Hub"},
+    "West Godavari": {"name": "M/s Vijayadurga Cold Storage (Tadepalligudem)", "capacity": "1,500 MT", "distance": "District Hub"},
+    "East Godavari": {"name": "M/s Ratna Ice & Cold Storage (Rajahmundry)", "capacity": "1,500 MT", "distance": "Godavari Logistics Hub"},
+    "Warangal": {"name": "M/s Supriya Cold Storage / Akshaya Cold Storage", "capacity": "3,000+ MT", "distance": "Warangal Agro Center"},
+    "Khammam": {"name": "M/s Gayathri Cold Storage", "capacity": "2,500 MT", "distance": "Khammam Hub"},
+    "Anantapur": {"name": "Premier Cold Storage (Hindupur / Anantapur Hub)", "capacity": "5,500 MT", "distance": "Rayalaseema Storage Grid"},
+    "YSR Kadapa": {"name": "Madanapalli Cold Storage Hub", "capacity": "2,000 MT", "distance": "District Agro Center"},
+    "Nizamabad": {"name": "Nizamabad Regional Seed & Produce Cold Storage", "capacity": "3,000 MT", "distance": "North Telangana Hub"},
+    "Karimnagar": {"name": "Karimnagar District Cooperative Cold Storage", "capacity": "2,500 MT", "distance": "Central Hub"}
+}
+
+# Find nearest matching cold storage based on selected district string
+nearest_storage = cold_storage_db.get(district_tag, {"name": "Local District Co-op Cold Storage Facility", "capacity": "Standard 2,000 MT", "distance": "Within District Radius"})
+
+if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary"):
+    # Recommendation logic factoring budget & water
+    if "Low" in investment_budget:
+        crop = "Millets (శ్రీ ధాన్యాలు) or Pulses / Green Gram (పెసలు)"
+        est_return = "₹25,000 – ₹40,000 net return/acre"
+    elif "High" in investment_budget and not any("Rainfed" in s for s in water_sources):
         if "Black Cotton" in detected_soil_type:
-            crop = "Cotton (పత్తి) or Bengal Gram (శనగలు)"
-        elif "Alluvial" in detected_soil_type or "Canal" in water_source:
-            crop = "Paddy / Varalu (వరి) or Maize (మొక్కజొన్న)"
+            crop = "Commercial Cotton (బిటి పత్తి) or Chillies (మిరప)"
+            est_return = "₹70,000 – ₹1,20,000 gross return/acre"
         else:
-            crop = "Chillies (మిరప) or Cotton (పత్తి)"
+            crop = "Hybrid Paddy / Varalu (వరి) or Maize (మొక్కజొన్న)"
+            est_return = "₹50,000 – ₹80,000 gross return/acre"
+    else:
+        crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
+        est_return = "₹35,000 – ₹55,000 net return/acre"
 
     st.success(f"✅ **Recommended Crop / సిఫార్సు చేయబడిన పంట:** {crop}")
-    st.info(f"💧 **Hydrology Factor:** {water_source.split('(')[0].strip()} | Depth: {borewell_depth} ft | Power: {power_hours} hrs/day")
-    st.warning("💡 **Advisory Note:** Consult your local Rythu Bharosa Kendram (RBK) agricultural extension officer before final sowing.")
+    
+    col_r1, col_r2 = st.columns(2)
+    with col_r1:
+        st.metric(label="Estimated Financial Returns", value=est_return)
+    with col_r2:
+        st.metric(label="Fertilizer Sourcing Channel", value=fertilizer_mode.split('(')[0].strip())
+        
+    st.info(f"❄️ **Nearest Cold Storage Facility ({district_tag} Region):**\n"
+            f"- **Facility Name:** {nearest_storage['name']}\n"
+            f"- **Capacity:** {nearest_storage['capacity']} | **Proximity:** {nearest_storage['distance']}\n"
+            f"- *Ideal for safe storage of perishable yields, seed preservation, and post-harvest price buffering.*")
+            
+    st.warning("💡 **Advisory Note:** Verify input subsidies and storage booking slots directly through your local Rythu Bharosa Kendram (RBK).")
