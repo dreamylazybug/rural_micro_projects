@@ -100,7 +100,8 @@ with st.expander("⚙️ Configure Parameters for Selected Water Sources / ఎ�
         st.subheader("Borewell Parameters / బోర్‌వెల్ వివరాలు")
         col_w1, col_w2 = st.columns(2)
         with col_w1:
-            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step, 50)
+            # Fixed syntax error: changed 'step, 50' to 'step=50'
+            borewell_depth = st.number_input("Borewell Depth (Feet) / లోతు", min_value=100, max_value=1200, value=350, step=50)
         with col_w2:
             power_hours = st.slider("Daily Power Supply (Hours) / విద్యుత్ గంటలు", min_value=3, max_value=24, value=9)
 
