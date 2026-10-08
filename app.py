@@ -14,7 +14,7 @@ st.set_page_config(
 # App Header
 st.title("🌱 Smart Crop & Livelihood Recommender")
 st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, and instant WhatsApp sharing.")
+st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, stable camera UI, and instant WhatsApp sharing.")
 
 # --- DEMO PRE-POPULATION HELPER ---
 with st.container():
@@ -47,7 +47,7 @@ ap_ts_mandals = [
     "Palakollu (పాలకొల్లు), West Godavari", "Narsapuram (నరసాపురం), West Godavari"
 ]
 
-default_mandal_index = 1 if is_demo else 0  # Mangalagiri for demo
+default_mandal_index = 1 if is_demo else 0
 
 selected_location_str = st.selectbox(
     "Search or Select Mandal / Town / మండలం లేదా పట్టణం కోసం వెతకండి:",
@@ -167,30 +167,32 @@ with col_e2:
 
 st.divider()
 
-# --- STEP 4: CAMERA INPUT FOR SOIL ANALYSIS ---
+# --- STEP 4: STABLE CAMERA INPUT FOR SOIL ANALYSIS ---
 st.header("4. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
+
 if is_demo:
-    st.success("🟢 **Demo Mode Active:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల* (No camera upload required for preview).")
+    st.info("🟢 **Demo Mode Active:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల* (Camera input displayed below for preview stability).")
+
+st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
+soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి")
+
+if is_demo:
+    detected_soil_type = "Black Cotton Soil / నల్ల రేగడి నేల (Regur)"
 else:
-    st.markdown("Take a clear picture of your field soil using your mobile camera. The system will analyze color tone and texture.")
-
-soil_image_file = st.camera_input("Snap Soil Sample / నేల ఫోటో తీయండి") if not is_demo else None
-
-detected_soil_type = "Black Cotton Soil / నల్ల రేగడి నేల (Regur)" if is_demo else "Red Sandy Loam (ఎర్ర నేలలు)"
-
-if soil_image_file is not None:
-    image = Image.open(soil_image_file)
-    st.image(image, caption="Captured Soil Sample / తీయబడిన నేల నమూనా", width=300)
-    img_array = np.array(image)
-    avg_color = img_array.mean(axis=(0, 1))
-    
-    if avg_color[0] > avg_color[1] + 15:
-        detected_soil_type = "Red Sandy Loam / ఎర్ర నేల (Red Chalka)"
-    elif avg_color.mean() < 75:
-        detected_soil_type = "Black Cotton Soil / నల్ల రేగడి నేల (Regur)"
-    else:
-        detected_soil_type = "Alluvial Delta Soil / డెల్టా ఒండ్రు నేల"
+    detected_soil_type = "Red Sandy Loam (ఎర్ర నేలలు)"
+    if soil_image_file is not None:
+        image = Image.open(soil_image_file)
+        st.image(image, caption="Captured Soil Sample / తీయబడిన నేల నమూనా", width=300)
+        img_array = np.array(image)
+        avg_color = img_array.mean(axis=(0, 1))
         
+        if avg_color[0] > avg_color[1] + 15:
+            detected_soil_type = "Red Sandy Loam / ఎర్ర నేల (Red Chalka)"
+        elif avg_color.mean() < 75:
+            detected_soil_type = "Black Cotton Soil / నల్ల రేగడి నేల (Regur)"
+        else:
+            detected_soil_type = "Alluvial Delta Soil / డెల్టా ఒండ్రు నేల"
+
 st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:** {detected_soil_type}")
 
 st.divider()
@@ -261,7 +263,6 @@ cold_storage_db = {
 
 nearest_storage = cold_storage_db.get(district_tag, {"name": "Local District Co-op Cold Storage Facility", "capacity": "Standard 2,000 MT", "distance": "Within District Radius"})
 
-# Auto-run if demo is loaded or button is clicked
 if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి ప్రణాళికను రూపొందించు", type="primary") or is_demo:
     is_only_rainfed = len(water_sources) == 0 or ("Rainfed" in water_sources and len(water_sources) == 1)
 
@@ -278,7 +279,6 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
         matched_key = "Groundnut" if "Red Sandy" in detected_soil_type else "Redgram"
         est_return = "₹35,000 – ₹55,000 net return/acre"
 
-    # If demo mode is active, force cotton for Black Cotton soil in Guntur
     if is_demo:
         matched_key = "Cotton"
         est_return = "₹75,000 – ₹1,10,000 gross return/acre"
