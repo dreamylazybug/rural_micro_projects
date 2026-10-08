@@ -13,26 +13,26 @@ st.set_page_config(
 # App Header
 st.title("🌱 Smart Crop & Livelihood Recommender")
 st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Select location, configure multiple water sources, snap a soil photo, and evaluate economic returns and nearest cold storage.")
+st.markdown("Select location in English/Telugu, configure water sources, snap a soil photo, and evaluate economic returns and nearest cold storage.")
 
 st.divider()
 
-# --- STEP 1: SEARCHABLE MANDAL AUTO-COMPLETE & WEATHER API ---
+# --- STEP 1: BILINGUAL MANDAL AUTO-COMPLETE & WEATHER API ---
 st.header("1. Location & Climate / స్థానం మరియు వాతావరణం")
 
 ap_ts_mandals = [
-    "Vijayawada, Krishna", "Mangalagiri, Guntur", "Tenali, Guntur", "Guntur Rural, Guntur",
-    "Eluru, West Godavari", "Tanuku, West Godavari", "Bhimavaram, West Godavari",
-    "Rajahmundry, East Godavari", "Kakinada, East Godavari", "Amalapuram, East Godavari",
-    "Nandyal, Kurnool", "Adoni, Kurnool", "Kurnool Rural, Kurnool",
-    "Anantapur, Anantapur", "Dharmavaram, Anantapur", "Hindupur, Anantapur",
-    "Kadapa, YSR Kadapa", "Proddatur, YSR Kadapa", "Tadipatri, Anantapur",
-    "Nellore, Nellore", "Ongole, Prakasam", "Kavali, Nellore",
-    "Srikakulam, Srikakulam", "Vizianagaram, Vizianagaram", "Visakhapatnam, Visakhapatnam",
-    "Warangal, Warangal", "Hanamkonda, Warangal", "Khammam, Khammam", "Bhadrachalam, Khammam",
-    "Siddipet, Siddipet", "Karimnagar, Karimnagar", "Nizamabad, Nizamabad",
-    "Nalgonda, Nalgonda", "Mahabubnagar, Mahabubnagar", "Sangareddy, Sangareddy",
-    "Palakollu, West Godavari", "Narsapuram, West Godavari"
+    "Vijayawada (విజయవాడ), Krishna", "Mangalagiri (మంగళగిరి), Guntur", "Tenali (తెనాలి), Guntur", "Guntur Rural (గుంటూరు గ్రామీణ), Guntur",
+    "Eluru (ఏలూరు), West Godavari", "Tanuku (తణుకు), West Godavari", "Bhimavaram (భీమవరం), West Godavari",
+    "Rajahmundry (రాజమహేంద్రవరం), East Godavari", "Kakinada (కాకినాడ), East Godavari", "Amalapuram (అమలాపురం), East Godavari",
+    "Nandyal (నంద్యాల), Kurnool", "Adoni (ఆదోని), Kurnool", "Kurnool Rural (కర్నూలు గ్రామీణ), Kurnool",
+    "Anantapur (అనంతపురం), Anantapur", "Dharmavaram (ధర్మవరం), Anantapur", "Hindupur (హిందూపూర్), Anantapur",
+    "Kadapa (కడప), YSR Kadapa", "Proddatur (ప్రొద్దుటూరు), YSR Kadapa", "Tadipatri (తాడిపత్రి), Anantapur",
+    "Nellore (నెల్లూరు), Nellore", "Ongole (ఒంగోలు), Prakasam", "Kavali (కావలి), Nellore",
+    "Srikakulam (శ్రీకాకుళం), Srikakulam", "Vizianagaram (విజయనగరం), Vizianagaram", "Visakhapatnam (విశాఖపట్నం), Visakhapatnam",
+    "Warangal (వరంగల్), Warangal", "Hanamkonda (హనుమకొండ), Warangal", "Khammam (ఖమ్మం), Khammam", "Bhadrachalam (భద్రాచలం), Khammam",
+    "Siddipet (సిద్దిపేట), Siddipet", "Karimnagar (కరీంనగర్), Karimnagar", "Nizamabad (నిజామాబాద్), Nizamabad",
+    "Nalgonda (నల్గొండ), Nalgonda", "Mahabubnagar (మహబూబ్‌నగర్), Mahabubnagar", "Sangareddy (సంగారెడ్డి), Sangareddy",
+    "Palakollu (పాలకొల్లు), West Godavari", "Narsapuram (నరసాపురం), West Godavari"
 ]
 
 selected_location_str = st.selectbox(
@@ -41,7 +41,8 @@ selected_location_str = st.selectbox(
     index=0
 )
 
-place_input = selected_location_str.split(",")[0].strip()
+# Extract English place name before parenthesis for geocoding API lookup
+place_input = selected_location_str.split("(")[0].strip()
 district_tag = selected_location_str.split(",")[1].strip() if "," in selected_location_str else "AP/TS"
 
 @st.cache_data
@@ -72,7 +73,7 @@ def fetch_weather_data(latitude, longitude):
         return 28.5, 70.0, 300.0
 
 current_temp, current_humidity, elevation = fetch_weather_data(lat, lon)
-st.success(f"📍 **Selected Location:** {selected_location_str} | **Temp:** {current_temp}°C | **Elevation:** {elevation}m")
+st.success(f"📍 **Selected Location / ఎంచుకున్న ప్రాంతం:** {selected_location_str} | **Temp:** {current_temp}°C | **Elevation:** {elevation}m")
 
 st.divider()
 
@@ -217,7 +218,6 @@ if st.button("Calculate Complete Agronomic & Economic Plan / పూర్తి 
         crop = "Redgram / Kandi Pappu (కందిపప్పు) or Groundnut (వేరుశెనగ)"
         est_return = "₹35,000 – ₹55,000 net return/acre"
 
-    # Extract values cleanly prior to f-string display to prevent syntax errors
     storage_name = nearest_storage['name']
     storage_cap = nearest_storage['capacity']
     storage_dist = nearest_storage['distance']
