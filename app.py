@@ -14,7 +14,7 @@ st.set_page_config(
 # App Header
 st.title("🌱 Smart Crop & Livelihood Recommender")
 st.subheader("స్మార్ట్ పంట మరియు ఆర్థిక సిఫార్సు వ్యవస్థ (AP & Telangana)")
-st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, stable camera UI, and instant WhatsApp sharing.")
+st.markdown("Bilingual voice-ready search, offline-cached agronomic rules, multi-source hydrology, crop history tracking, stable camera UI, and instant WhatsApp sharing.")
 
 # --- DEMO PRE-POPULATION HELPER ---
 with st.container():
@@ -142,8 +142,25 @@ if any("Borewell" in src for src in water_sources) and borewell_depth > 600:
 
 st.divider()
 
-# --- STEP 3: ECONOMIC & INPUT CONSTRAINTS ---
-st.header("3. Financials & Inputs / ఆర్థిక మరియు ఎరువుల లభ్యత")
+# --- STEP 3: CROP HISTORY & NUTRIENT RESIDUE ---
+st.header("3. Crop History & Soil Health / పంట చరిత్ర మరియు నేల ఆరోగ్యం")
+
+previous_crop = st.selectbox(
+    "Select previous season crop / గత సీజన్లో పండించిన పంట:",
+    [
+        "Legumes / Pulses (e.g., Redgram, Green Gram) - High Residual Nitrogen / అపరాలు (కంది, పెసలు) - అధిక నత్రజని నిల్వలు",
+        "Cereals / Paddy (e.g., Rice, Maize) - Heavy Nutrient Depletion / ధాన్యాలు / వరి, మొక్కజొన్న - పోషకాల వినియోగం ఎక్కువ",
+        "Commercial Crops (e.g., Cotton, Chillies) - Intensive Input Usage / వాణిజ్య పంటలు (పత్తి, మిరప) - ఎక్కువ ఎరువుల వాడకం",
+        "Fallow / Dryland Rest - Natural Recovery / పడావు భూమి / విశ్రాంతి - సహజంగా కోలుకున్న నేల"
+    ]
+)
+
+soil_health_proxy = "High Residual Fertility (Legume Rotational Benefit)" if "Legumes" in previous_crop else "Standard / Depleted Baseline"
+
+st.divider()
+
+# --- STEP 4: FINANCIALS & INPUTS ---
+st.header("4. Financials & Inputs / ఆర్థిక మరియు ఎరువుల లభ్యత")
 
 col_e1, col_e2 = st.columns(2)
 with col_e1:
@@ -167,8 +184,8 @@ with col_e2:
 
 st.divider()
 
-# --- STEP 4: STABLE CAMERA INPUT FOR SOIL ANALYSIS ---
-st.header("4. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
+# --- STEP 5: STABLE CAMERA INPUT FOR SOIL ANALYSIS ---
+st.header("5. Soil Visual Capture / నేల ఫోటో క్యాప్చర్")
 
 if is_demo:
     st.info("🟢 **Demo Mode Active:** Sample soil pre-configured as *Black Cotton Soil / నల్ల రేగడి నేల* (Camera input displayed below for preview stability).")
@@ -197,8 +214,8 @@ st.info(f"🔍 **AI Soil Classification / నేల గుర్తింపు:
 
 st.divider()
 
-# --- STEP 5: COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY WITH WHATSAPP SHARE ---
-st.header("5. Complete Crop Advisory & Livelihood Plan / పూర్తి పంట మరియు ఆర్థిక సలహా")
+# --- STEP 6: COMPREHENSIVE AGRONOMIC & ECONOMIC ADVISORY WITH WHATSAPP SHARE ---
+st.header("6. Complete Crop Advisory & Livelihood Plan / పూర్తి పంట మరియు ఆర్థిక సలహా")
 
 crop_advisory_db = {
     "Redgram": {
